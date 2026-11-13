@@ -1,1 +1,108 @@
+name: Full Sync
+on:
+  schedule:
+    - cron: '0 18 * * *'
+  workflow_dispatch:
 
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Fetch Data
+        run: |
+          pip install pypinyin
+          python3 -c "
+import urllib.request, json, os, re, time
+from pypinyin import lazy_pinyin
+
+state = {'movie': 1, 'tv': 1, 'anime': 1}
+if os.path.exists('page_state.json'):
+    state = json.load(open('page_state.json'))
+
+def get_letter(name):
+    if not name: return '0'
+    first_char = name[0]
+    if re.match(r'[a-zA-Z0-9]', first_char):
+        return first_char.upper()
+    try:
+        pinyin = lazy_pinyin(first_char)[0]
+        return pinyin[0].upper() if pinyin else 'Other'
+    except:
+        return 'Other'
+
+def load_existing(cat_name):
+    files = [f for f in os.listdir('.') if f.startswith(f'{cat_name}_') and f.endswith('.json')]
+    existing = {}
+    for f in files:
+        letter = f.replace(f'{cat_name}_', '').replace('.json', '')
+        try:
+            existing[letter] = json.load(open(f, encoding='utf-8'))
+        except:
+            existing[letter] = []
+    return existing
+
+def save_existing(cat_name, existing):
+    for letter, items in existing.items():
+        if items:
+            json.dump(items, open(f'{cat_name}_{letter}.json', 'w', encoding='utf-8'), ensure_ascii=False)
+
+def fetch_url(url):
+    try:
+        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+        with urllib.request.urlopen(req, timeout=15) as res:
+            return json.loads(res.read().decode('utf-8'))
+    except Exception as e:
+        return None
+
+def process_category(tid, cat_name):
+    existing = load_existing(cat_name)
+    
+    data = fetch_url(f'https://360zyzz.com/api.php/provide/vod/?ac=videolist&t={tid}&h=24&pagesize=500')
+    if data:
+        for v in data.get('list', []):
+            name = v.get('vod_name')
+            if not name: continue
+            letter = get_letter(name)
+            if letter not in existing: existing[letter] = []
+            if not any(m['name'] == name for m in existing[letter]):
+                existing[letter].append({'name': name})
+                
+    page = state[cat_name]
+    for _ in range(15):
+        data = fetch_url(f'https://360zyzz.com/api.php/provide/vod/?ac=videolist&t={tid}&pg={page}&pagesize=500')
+        if not data or not data.get('list'): 
+            break
+        
+        items = data.get('list', [])
+        total = data.get('total', 0)
+        
+        for v in items:
+            name = v.get('vod_name')
+            if not name: continue
+            letter = get_letter(name)
+            if letter not in existing: existing[letter] = []
+            if not any(m['name'] == name for m in existing[letter]):
+                existing[letter].append({'name': name})
+                
+        page += 1
+        if page * 500 >= total:
+            break
+        time.sleep(0.5)
+        
+    state[cat_name] = page
+    save_existing(cat_name, existing)
+
+process_category(1, 'movie')
+process_category(2, 'tv')
+process_category(4, 'anime')
+
+json.dump(state, open('page_state.json', 'w'))
+"
+      - name: Commit Changes
+        run: |
+          git config user.name "GitHub Action"
+          git config user.email "action@github.com"
+          git add *.json
+          git commit -m "Update data" || exit 0
+          git push
