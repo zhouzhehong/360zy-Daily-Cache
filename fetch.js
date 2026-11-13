@@ -20,21 +20,6 @@ function getLetter(name) {
   }
 }
 
-function saveData(catName, allItems) {
-  let grouped = {};
-  for (let item of allItems) {
-    let letter = getLetter(item.name);
-    if (!grouped[letter]) grouped[letter] = [];
-    grouped[letter].push({ name: item.name });
-  }
-  const safeCat = catName.replace(/[\/\\?%*:|"<>]/g, '_').trim();
-  for (let letter in grouped) {
-    if (grouped[letter].length > 0) {
-      fs.writeFileSync(`${safeCat}_${letter}.json`, JSON.stringify(grouped[letter]));
-    }
-  }
-}
-
 async function fetchUrl(url) {
   try {
     let res = await fetch(url, { 
@@ -68,12 +53,11 @@ async function getCategories() {
     })).filter(c => c.name && !/福利|伦理|写真/i.test(c.name));
 
     if (categories.length > 0) {
-      console.log(`Found ${categories.length} categories: ${categories.map(c => c.name).join(', ')}`);
+      console.log(`Found ${categories.length} categories.`);
       return categories;
     }
   }
 
-  console.log('Fallback to default categories.');
   return [
     { id: 1, name: '电影' },
     { id: 2, name: '电视剧' },
@@ -82,51 +66,51 @@ async function getCategories() {
 }
 
 async function processCategory(cat) {
-  console.log(`\n=== Start: ${cat.name} (ID: ${cat.id}) ===`);
-  let allItems = [];
-  let page = 1;
-  let totalPages = 999;
-
-  while (page <= totalPages) {
-    await sleep(); 
-    
-    const pageUrl = `${API_BASE}?ac=videolist&t=${cat.id}&pg=${page}&pagesize=100`;
-    const pageData = await fetchUrl(pageUrl);
-
-    if (!pageData || !pageData.list || pageData.list.length === 0) {
-      console.log(`End at page ${page} for [${cat.name}].`);
-      break;
+  console.log(`\n=== Start: ${cat.name} ===`);
+  
+  let existing = {};
+  const files = fs.readdirSync('.');
+  for (const f of files) {
+    if (f.startsWith(`${cat.name}_`) && f.endsWith('.json')) {
+      const letter = f.replace(`${cat.name}_`, '').replace('.json', '');
+      try {
+        existing[letter] = JSON.parse(fs.readFileSync(f, 'utf8'));
+      } catch(e) { existing[letter] = []; }
     }
-
-    if (page === 1 && pageData.total) {
-      totalPages = Math.ceil(pageData.total / 100);
-      console.log(`[${cat.name}] Total pages: ${totalPages}`);
-    }
-
-    const items = pageData.list.map(v => ({ name: v.vod_name })).filter(i => i.name);
-    allItems = allItems.concat(items);
-    console.log(`✅ [${cat.name}] Page ${page}/${totalPages} | Items: ${items.length}`);
-
-    saveData(cat.name, allItems); 
-    page++;
   }
-  console.log(`=== Done: ${cat.name} | Total: ${allItems.length} ===\n`);
+
+  await sleep();
+  const pageUrl = `${API_BASE}?ac=videolist&t=${cat.id}&h=24&pagesize=100`;
+  const pageData = await fetchUrl(pageUrl);
+
+  if (!pageData || !pageData.list || pageData.list.length === 0) {
+    console.log(`No updates today for [${cat.name}].`);
+    return;
+  }
+
+  let added = 0;
+  for (const v of pageData.list) {
+    if (!v.vod_name) continue;
+    const letter = getLetter(v.vod_name);
+    if (!existing[letter]) existing[letter] = [];
+    
+    if (!existing[letter].some(m => m.name === v.vod_name)) {
+      existing[letter].push({ name: v.vod_name });
+      added++;
+    }
+  }
+
+  for (const letter in existing) {
+    fs.writeFileSync(`${cat.name}_${letter}.json`, JSON.stringify(existing[letter]));
+  }
+  console.log(`✅ Added ${added} new items for [${cat.name}].`);
 }
 
 (async () => {
-  const files = fs.readdirSync('.');
-  for (const f of files) {
-    if (f.endsWith('.json') && f !== 'package.json' && f !== 'package-lock.json') {
-      fs.unlinkSync(f);
-    }
-  }
-
   const categories = await getCategories();
-
   for (const cat of categories) {
     await processCategory(cat);
-    await sleep(3000, 5000); 
+    await sleep(1000, 2000); 
   }
-  
-  console.log('All done!');
+  console.log('\nAll done!');
 })();
