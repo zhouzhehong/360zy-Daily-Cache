@@ -1,6 +1,8 @@
 const fs = require('fs');
 const { pinyin } = require('pinyin-pro');
 
+const API_BASE = 'https://360zyzz.com/api.php/provide/vod/';
+
 const sleep = (min = 1500, max = 3500) => {
   const ms = Math.floor(Math.random() * (max - min + 1)) + min;
   return new Promise(r => setTimeout(r, ms));
@@ -18,16 +20,17 @@ function getLetter(name) {
   }
 }
 
-function saveData(cat, allItems) {
+function saveData(catName, allItems) {
   let grouped = {};
   for (let item of allItems) {
     let letter = getLetter(item.name);
     if (!grouped[letter]) grouped[letter] = [];
-    grouped[letter].push(item);
+    grouped[letter].push({ name: item.name });
   }
+  const safeCat = catName.replace(/[\/\\?%*:|"<>]/g, '_').trim();
   for (let letter in grouped) {
     if (grouped[letter].length > 0) {
-      fs.writeFileSync(`${cat}_${letter}.json`, JSON.stringify(grouped[letter]));
+      fs.writeFileSync(`${safeCat}_${letter}.json`, JSON.stringify(grouped[letter]));
     }
   }
 }
@@ -43,67 +46,87 @@ async function fetchUrl(url) {
       } 
     });
     if (!res.ok) {
-      console.log(`[HTTP error] ${res.status}`);
+      console.log(`[HTTP ${res.status}] ${url}`);
       return null;
     }
     return await res.json();
   } catch(e) { 
-    console.log(`[Fetch error] ${e.message}`);
+    console.log(`[Fetch Error] ${e.message}`);
     return null; 
   }
 }
 
-async function processCategory(tid, cat) {
-  console.log(`\n=== Start: ${cat} ===`);
-  await sleep(2000, 4000);
-  let data = await fetchUrl(`https://360zyzz.com/api.php/provide/vod/?ac=videolist&t=${tid}&h=24&pagesize=100`);
-  
-  let allItems = [];
-  if (data && data.list) {
-    allItems = allItems.concat(data.list.map(v => ({ name: v.vod_name })).filter(i => i.name));
-    console.log(`Latest: ${allItems.length}`);
+async function getCategories() {
+  console.log('Getting categories...');
+  const url = `${API_BASE}?ac=list`;
+  const data = await fetchUrl(url);
+
+  if (data && data.class && Array.isArray(data.class)) {
+    const categories = data.class.map(c => ({
+      id: c.type_id,
+      name: c.type_name
+    })).filter(c => c.name && !/福利|伦理|写真/i.test(c.name));
+
+    if (categories.length > 0) {
+      console.log(`Found ${categories.length} categories: ${categories.map(c => c.name).join(', ')}`);
+      return categories;
+    }
   }
 
+  console.log('Fallback to default categories.');
+  return [
+    { id: 1, name: '电影' },
+    { id: 2, name: '电视剧' },
+    { id: 4, name: '动漫' }
+  ];
+}
+
+async function processCategory(cat) {
+  console.log(`\n=== Start: ${cat.name} (ID: ${cat.id}) ===`);
+  let allItems = [];
   let page = 1;
   let totalPages = 999;
 
   while (page <= totalPages) {
     await sleep(); 
-    let pageUrl = `https://360zyzz.com/api.php/provide/vod/?ac=videolist&t=${tid}&pg=${page}&pagesize=100`;
-    let pageData = await fetchUrl(pageUrl);
+    
+    const pageUrl = `${API_BASE}?ac=videolist&t=${cat.id}&pg=${page}&pagesize=100`;
+    const pageData = await fetchUrl(pageUrl);
 
     if (!pageData || !pageData.list || pageData.list.length === 0) {
-      console.log(`End at page ${page}`);
+      console.log(`End at page ${page} for [${cat.name}].`);
       break;
     }
 
     if (page === 1 && pageData.total) {
       totalPages = Math.ceil(pageData.total / 100);
-      console.log(`Total pages: ${totalPages}`);
+      console.log(`[${cat.name}] Total pages: ${totalPages}`);
     }
 
-    let items = pageData.list.map(v => ({ name: v.vod_name })).filter(i => i.name);
+    const items = pageData.list.map(v => ({ name: v.vod_name })).filter(i => i.name);
     allItems = allItems.concat(items);
-    console.log(`✅ Page ${page}/${totalPages} | Items: ${items.length}`);
+    console.log(`✅ [${cat.name}] Page ${page}/${totalPages} | Items: ${items.length}`);
 
-    saveData(cat, allItems);
+    saveData(cat.name, allItems); 
     page++;
   }
-  console.log(`=== Done: ${cat} | Total: ${allItems.length} ===\n`);
+  console.log(`=== Done: ${cat.name} | Total: ${allItems.length} ===\n`);
 }
 
 (async () => {
-  let files = fs.readdirSync('.');
-  for (let f of files) {
-    if ((f.startsWith('movie_') || f.startsWith('tv_') || f.startsWith('anime_')) && f.endsWith('.json')) {
+  const files = fs.readdirSync('.');
+  for (const f of files) {
+    if (f.endsWith('.json') && f !== 'package.json' && f !== 'package-lock.json') {
       fs.unlinkSync(f);
     }
   }
-  if (fs.existsSync('page_state.json')) fs.unlinkSync('page_state.json');
 
-  await processCategory(1, 'movie');
-  await sleep(3000, 5000); 
-  await processCategory(2, 'tv');
-  await sleep(3000, 5000);
-  await processCategory(4, 'anime');
+  const categories = await getCategories();
+
+  for (const cat of categories) {
+    await processCategory(cat);
+    await sleep(3000, 5000); 
+  }
+  
+  console.log('All done!');
 })();
