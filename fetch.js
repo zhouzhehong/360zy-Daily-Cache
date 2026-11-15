@@ -1,7 +1,7 @@
 const fs = require('fs');
 const { pinyin } = require('pinyin-pro');
 
-const API_BASE = 'https://360zyzz.com/api.php/provide/vod/';
+const API_BASE = 'https://360zy.com/api.php/provide/vod/';
 const STATE_FILE = 'sync_state.json';
 
 const sleep = (min = 1500, max = 3500) => {
@@ -55,6 +55,8 @@ async function processCategory(cat, isFirstRun) {
   let allItems = [];
   Object.values(existing).forEach(list => allItems = allItems.concat(list));
 
+  let existingIds = new Set(allItems.map(item => item.id));
+
   if (isFirstRun) {
     console.log(`[Full Scan] Fetching all pages...`);
     let page = 1;
@@ -66,8 +68,9 @@ async function processCategory(cat, isFirstRun) {
       if (page === 1 && data.total) totalPages = Math.ceil(data.total / 100);
       
       for (const v of data.list) {
-        if (v.vod_name && !allItems.some(m => m.name === v.vod_name)) {
-          allItems.push({ name: v.vod_name });
+        if (v.vod_name && v.vod_id && !existingIds.has(String(v.vod_id))) {
+          allItems.push({ name: v.vod_name, id: String(v.vod_id) });
+          existingIds.add(String(v.vod_id));
         }
       }
       console.log(`Page ${page}/${totalPages} done.`);
@@ -81,8 +84,9 @@ async function processCategory(cat, isFirstRun) {
     let added = 0;
     if (data && data.list) {
       for (const v of data.list) {
-        if (v.vod_name && !allItems.some(m => m.name === v.vod_name)) {
-          allItems.push({ name: v.vod_name });
+        if (v.vod_name && v.vod_id && !existingIds.has(String(v.vod_id))) {
+          allItems.push({ name: v.vod_name, id: String(v.vod_id) });
+          existingIds.add(String(v.vod_id));
           added++;
         }
       }
@@ -94,7 +98,7 @@ async function processCategory(cat, isFirstRun) {
   for (let item of allItems) {
     let letter = getLetter(item.name);
     if (!grouped[letter]) grouped[letter] = [];
-    grouped[letter].push({ name: item.name });
+    grouped[letter].push({ name: item.name, id: item.id });
   }
   for (let letter in grouped) {
     fs.writeFileSync(`${cat.name}_${letter}.json`, JSON.stringify(grouped[letter]));
