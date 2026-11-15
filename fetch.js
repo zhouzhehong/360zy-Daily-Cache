@@ -10,9 +10,11 @@ const sleep = (min = 1500, max = 3500) => {
 };
 
 function getLetter(name) {
-  if (!name) return '0';
+  if (!name) return 'Other';
   const firstChar = name[0];
-  if (/[a-zA-Z0-9]/.test(firstChar)) return firstChar.toUpperCase();
+  if (/[a-zA-Z]/.test(firstChar)) {
+    return firstChar.toUpperCase();
+  }
   try {
     const py = pinyin(firstChar, { pattern: 'first', toneType: 'none' });
     return py && /[a-zA-Z]/.test(py[0]) ? py[0].toUpperCase() : 'Other';
@@ -31,7 +33,9 @@ async function fetchUrl(url) {
     });
     if (!res.ok) return null;
     return await res.json();
-  } catch(e) { return null; }
+  } catch(e) { 
+    return null; 
+  }
 }
 
 async function getCategories() {
@@ -39,7 +43,7 @@ async function getCategories() {
   if (data && data.class) {
     return data.class.map(c => ({ id: c.type_id, name: c.type_name })).filter(c => c.name && !/福利|伦理/.test(c.name));
   }
-  return [{ id: 1, name: '电影' }, { id: 2, name: '电视剧' }, { id: 4, name: '动漫' }];
+  return [{ id: 1, name: '电影' }, { id: 2, name: '连续剧' }, { id: 4, name: '动漫' }];
 }
 
 async function processCategory(cat, isFirstRun) {
@@ -52,10 +56,15 @@ async function processCategory(cat, isFirstRun) {
     try { existing[letter] = JSON.parse(fs.readFileSync(f, 'utf8')); } catch(e) { existing[letter] = []; }
   }
 
-  let allItems = [];
-  Object.values(existing).forEach(list => allItems = allItems.concat(list));
+  let idMap = {};
+  Object.keys(existing).forEach(letter => {
+    existing[letter].forEach(item => {
+      idMap[item.id] = { name: item.name, letter: letter };
+    });
+  });
 
-  let existingIds = new Set(allItems.map(item => item.id));
+  let newItemsAdded = 0;
+  let namesUpdated = 0;
 
   if (isFirstRun) {
     console.log(`[Full Scan] Fetching all pages...`);
@@ -68,9 +77,15 @@ async function processCategory(cat, isFirstRun) {
       if (page === 1 && data.total) totalPages = Math.ceil(data.total / 100);
       
       for (const v of data.list) {
-        if (v.vod_name && v.vod_id && !existingIds.has(String(v.vod_id))) {
-          allItems.push({ name: v.vod_name, id: String(v.vod_id) });
-          existingIds.add(String(v.vod_id));
+        if (v.vod_name && v.vod_id) {
+          const sid = String(v.vod_id);
+          const letter = getLetter(v.vod_name);
+          if (!idMap[sid]) {
+            if (!existing[letter]) existing[letter] = [];
+            existing[letter].push({ name: v.vod_name, id: sid });
+            idMap[sid] = { name: v.vod_name, letter: letter };
+            newItemsAdded++;
+          }
         }
       }
       console.log(`Page ${page}/${totalPages} done.`);
@@ -78,30 +93,48 @@ async function processCategory(cat, isFirstRun) {
       page++;
     }
   } else {
-    console.log(`[Incremental] Fetching latest 24h updates...`);
+    console.log(`[Incremental] Checking latest updates...`);
     await sleep();
     const data = await fetchUrl(`${API_BASE}?ac=videolist&t=${cat.id}&h=24&pagesize=100`);
-    let added = 0;
+    
     if (data && data.list) {
       for (const v of data.list) {
-        if (v.vod_name && v.vod_id && !existingIds.has(String(v.vod_id))) {
-          allItems.push({ name: v.vod_name, id: String(v.vod_id) });
-          existingIds.add(String(v.vod_id));
-          added++;
+        if (!v.vod_name || !v.vod_id) continue;
+        const sid = String(v.vod_id);
+        const newName = v.vod_name;
+        const newLetter = getLetter(newName);
+
+        if (!idMap[sid]) {
+          if (!existing[newLetter]) existing[newLetter] = [];
+          existing[newLetter].push({ name: newName, id: sid });
+          idMap[sid] = { name: newName, letter: newLetter };
+          newItemsAdded++;
+        } else {
+          if (idMap[sid].name !== newName) {
+            const oldLetter = idMap[sid].letter;
+            if (existing[oldLetter]) {
+              const idx = existing[oldLetter].findIndex(item => item.id === sid);
+              if (idx !== -1) existing[oldLetter].splice(idx, 1);
+            }
+            if (!existing[newLetter]) existing[newLetter] = [];
+            existing[newLetter].push({ name: newName, id: sid });
+            idMap[sid] = { name: newName, letter: newLetter };
+            namesUpdated++;
+          }
         }
       }
     }
-    console.log(`Added ${added} new items.`);
+    console.log(`Added: ${newItemsAdded}, Updated names: ${namesUpdated}`);
   }
 
-  let grouped = {};
-  for (let item of allItems) {
-    let letter = getLetter(item.name);
-    if (!grouped[letter]) grouped[letter] = [];
-    grouped[letter].push({ name: item.name, id: item.id });
-  }
-  for (let letter in grouped) {
-    fs.writeFileSync(`${cat.name}_${letter}.json`, JSON.stringify(grouped[letter]));
+  for (let letter in existing) {
+    if (existing[letter].length > 0) {
+      fs.writeFileSync(`${cat.name}_${letter}.json`, JSON.stringify(existing[letter]));
+    } else {
+      if (fs.existsSync(`${cat.name}_${letter}.json`)) {
+        fs.unlinkSync(`${cat.name}_${letter}.json`);
+      }
+    }
   }
 }
 
@@ -109,7 +142,15 @@ async function processCategory(cat, isFirstRun) {
   let isFirstRun = false;
   if (!fs.existsSync(STATE_FILE)) {
     isFirstRun = true;
-    console.log("First run detected. Starting FULL scan.");
+    console.log("First run detected. Wiping old data and starting FULL scan...");
+    const files = fs.readdirSync('.');
+    for (const file of files) {
+      if (file.endsWith('.json') && file !== 'package.json' && file !== 'package-lock.json') {
+        fs.unlinkSync(file);
+      }
+    }
+  } else {
+    console.log("State file found. Starting INCREMENTAL update...");
   }
 
   const categories = await getCategories();
@@ -120,6 +161,8 @@ async function processCategory(cat, isFirstRun) {
 
   if (isFirstRun) {
     fs.writeFileSync(STATE_FILE, JSON.stringify({ status: 'completed' }));
-    console.log("Full scan finished. State file created.");
+    console.log("\nFull scan finished. State file created. Future runs will be incremental.");
+  } else {
+    console.log("\nIncremental update finished.");
   }
 })();
