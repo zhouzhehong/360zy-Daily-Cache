@@ -139,18 +139,21 @@ async function processCategory(cat, isFirstRun) {
 }
 
 (async () => {
+  console.log("🧹 正在执行物理超度，专门清理遗留的数字后缀脏文件...");
+  const files = fs.readdirSync('.');
+  for (const file of files) {
+    if (/_(\d+)\.json$/.test(file)) {
+      fs.unlinkSync(file);
+      console.log(`✅ 已成功清除旧文件: ${file}`);
+    }
+  }
+
   let isFirstRun = false;
   if (!fs.existsSync(STATE_FILE)) {
     isFirstRun = true;
-    console.log("First run detected. Wiping old data and starting FULL scan...");
-    const files = fs.readdirSync('.');
-    for (const file of files) {
-      if (file.endsWith('.json') && file !== 'package.json' && file !== 'package-lock.json') {
-        fs.unlinkSync(file);
-      }
-    }
+    console.log("未找到状态文件，准备执行全量洗盘操作...");
   } else {
-    console.log("State file found. Starting INCREMENTAL update...");
+    console.log("检测到状态文件，开始执行每日增量核对...");
   }
 
   const categories = await getCategories();
@@ -161,8 +164,8 @@ async function processCategory(cat, isFirstRun) {
 
   if (isFirstRun) {
     fs.writeFileSync(STATE_FILE, JSON.stringify({ status: 'completed' }));
-    console.log("\nFull scan finished. State file created. Future runs will be incremental.");
+    console.log("\n所有分类全量抓取完成！已生成状态文件。");
   } else {
-    console.log("\nIncremental update finished.");
+    console.log("\n每日增量核对完成！");
   }
 })();
