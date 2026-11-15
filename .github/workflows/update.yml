@@ -1,46 +1,46 @@
 name: Full Sync
 
 on:
-schedule:
-- cron: '0 18 * * *'
-workflow_dispatch:
+  schedule:
+    - cron: '0 18 * * *'
+  workflow_dispatch:
 
 permissions:
-contents: write
+  contents: write
 
 concurrency:
-group: full-sync
-cancel-in-progress: false
+  group: full-sync
+  cancel-in-progress: false
 
 jobs:
-update:
-runs-on: ubuntu-latest
+  update:
+    runs-on: ubuntu-latest
 
-steps:
-  - uses: actions/checkout@v4
-    with:
-      ref: main
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
 
-  - name: Setup Node
-    uses: actions/setup-node@v4
-    with:
-      node-version: '22'
-      cache: npm
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
 
-  - name: Install deps
-    run: npm ci
+      - name: Install deps
+        run: npm install pinyin-pro
 
-  - name: Run Script
-    run: node fetch.js
+      - name: Run Script
+        run: node fetch.js
 
-  - name: Commit Changes
-    run: |
-      git config user.name "github-actions[bot]"
-      git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-      git add -A -- '*.json'
-      if git diff --cached --quiet; then
-        echo "No data changes"
-        exit 0
-      fi
-      git commit -m "Update data"
-      git push origin HEAD:main
+      - name: Commit Changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A -- '*.json'
+          if git diff --cached --quiet; then
+            echo "No data changes"
+            exit 0
+          fi
+          git commit -m "Update data"
+          git push origin HEAD:main
