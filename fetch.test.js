@@ -1,83 +1,365 @@
-const { expect } = require('chai');
-const fs = require('fs');
-const path = require('path');
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
 
-describe('Pagination Logic', () => {
-  let originalFetch;
-  let originalEnv;
+const {
+  fetchCategoryPages,
+  runSync,
+  readState
+} = require('./fetch.js');
 
-  beforeEach(() => {
-    originalFetch = global.fetch;
-    originalEnv = { ...process.env };
-    process.env.FULL_SYNC = 'false';
-    if (fs.existsSync('sync_state.json')) fs.unlinkSync('sync_state.json');
-    const files = fs.readdirSync('.').filter(f => f.endsWith('.json') && f !== 'package.json' && f !== 'package-lock.json');
-    files.forEach(f => fs.unlinkSync(f));
-  });
+function response(data) {
+  return {
+    ok: true,
+    status: 200,
+    json: async () => data
+  };
+}
 
-  afterEach(() => {
-    global.fetch = originalFetch;
-    process.env = originalEnv;
-    if (fs.existsSync('sync_state.json')) fs.unlinkSync('sync_state.json');
-    const files = fs.readdirSync('.').filter(f => f.endsWith('.json') && f !== 'package.json' && f !== 'package-lock.json');
-    files.forEach(f => fs.unlinkSync(f));
-  });
+function createItems(start, count) {
+  return Array.from({ length: count }, (_, index) => ({
+    vod_id: String(start + index),
+    vod_name: `Movie ${start + index}`
+  }));
+}
 
-  it('should fetch 250 items in 3 pages correctly', async () => {
-    global.fetch = async (url) => {
-      url = url.toString();
-      if (url.includes('ac=list')) {
-        return { ok: true, json: async () => ({ class: [{ type_id: 1, type_name: '电影' }] }) };
+function createFetch(categories, pageHandler) {
+  return async input => {
+    const url = new URL(String(input));
+
+    if (url.searchParams.get('ac') === 'list') {
+      return response({ class: categories });
+    }
+
+    if (url.searchParams.get('ac') === 'videolist') {
+      return response(await pageHandler({
+        category: url.searchParams.get('t'),
+        page: Number(url.searchParams.get('pg')),
+        hours: url.searchParams.get('h'),
+        pageSize: Number(url.searchParams.get('pagesize'))
+      }));
+    }
+
+    throw new Error(`Unexpected API URL: ${url}`);
+  };
+}
+
+function makeTempDir() {
+  return fs.mkdtempSync(
+    path.join(os.tmpdir(), '360zy-test-')
+  );
+}
+
+test('automatically fetches every page declared by the API', async () => {
+  const fetchImpl = createFetch(
+    [{ type_id: 1, type_name: '电影' }],
+    async ({ page }) => {
+      if (page === 1) {
+        return {
+          total: 250,
+          pagecount: 3,
+          list: createItems(1, 100)
+        };
       }
-      if (url.includes('ac=videolist')) {
-        const page = parseInt(new URL(url).searchParams.get('pg'));
-        const list = [];
-        const count = page < 3 ? 100 : 50;
-        for (let i = 0; i < count; i++) {
-          list.push({ vod_id: `${(page - 1) * 100 + i}`, vod_name: `Movie ${(page - 1) * 100 + i}` });
-        }
-        return { ok: true, json: async () => ({ list, total: 250, pagecount: 3 }) };
-      }
-    };
-    require('./fetch.js');
-    await new Promise(r => setTimeout(r, 1000));
-    const state = JSON.parse(fs.readFileSync('sync_state.json'));
-    expect(state.statistics.uniqueCount).to.equal(250);
-    expect(state.statistics.successfulPages).to.equal(3);
-  });
 
-  it('should fail whole category if page 2 fails', async () => {
-    global.fetch = async (url) => {
-      url = url.toString();
-      if (url.includes('ac=list')) return { ok: true, json: async () => ({ class: [{ type_id: 1, type_name: '电影' }] }) };
-      if (url.includes('ac=videolist')) {
-        const page = parseInt(new URL(url).searchParams.get('pg'));
-        if (page === 2) throw new Error('Simulated network failure');
-        return { ok: true, json: async () => ({ list: [{ vod_id: '1', vod_name: 'A' }], total: 200, pagecount: 2 }) };
+      if (page === 2) {
+        return {
+          total: 250,
+          pagecount: 3,
+          list: createItems(101, 100)
+        };
       }
-    };
-    const exitStub = { callCount: 0 };
-    const originalExit = process.exit;
-    process.exit = () => { exitStub.callCount++; throw new Error('Exit called'); };
-    try { require('./fetch.js'); } catch (e) {}
-    process.exit = originalExit;
-    expect(exitStub.callCount).to.be.greaterThan(0);
-  });
 
-  it('should preserve historical data during incremental sync', async () => {
-    fs.writeFileSync('电影_A.json', JSON.stringify([{ id: '1', name: 'Old Movie' }]));
-    global.fetch = async (url) => {
-      url = url.toString();
-      if (url.includes('ac=list')) return { ok: true, json: async () => ({ class: [{ type_id: 1, type_name: '电影' }] }) };
-      if (url.includes('ac=videolist')) {
-        return { ok: true, json: async () => ({ list: [{ vod_id: '2', vod_name: 'New Movie' }], total: 1, pagecount: 1 }) };
-      }
-    };
-    require('./fetch.js');
-    await new Promise(r => setTimeout(r, 1000));
-    const content = JSON.parse(fs.readFileSync('电影_A.json'));
-    expect(content.length).to.equal(2);
-    expect(content.find(i => i.id === '1')).to.exist;
-    expect(content.find(i => i.id === '2')).to.exist;
-  });
+      return {
+        total: 250,
+        pagecount: 3,
+        list: createItems(201, 50)
+      };
+    }
+  );
+
+  const result = await fetchCategoryPages(
+    { id: '1', name: '电影' },
+    {
+      fetchImpl,
+      wait: async () => {}
+    }
+  );
+
+  assert.equal(result.items.size, 250);
+  assert.equal(result.stats.successful_pages, 3);
+  assert.equal(result.stats.complete, true);
 });
+
+test('uses dynamically returned pagecount', async () => {
+  let requestedPages = 0;
+
+  const fetchImpl = createFetch(
+    [{ type_id: 99, type_name: '测试分类' }],
+    async ({ page }) => {
+      requestedPages++;
+
+      return {
+        total: 3,
+        pagecount: 3,
+        list: [{
+          vod_id: String(page),
+          vod_name: `Test ${page}`
+        }]
+      };
+    }
+  );
+
+  const result = await fetchCategoryPages(
+    { id: '99', name: '测试分类' },
+    {
+      fetchImpl,
+      wait: async () => {}
+    }
+  );
+
+  assert.equal(requestedPages, 3);
+  assert.equal(result.items.size, 3);
+});
+
+test('fails when pagination metadata is missing', async () => {
+  const fetchImpl = createFetch(
+    [{ type_id: 1, type_name: '电影' }],
+    async () => ({
+      list: createItems(1, 1)
+    })
+  );
+
+  await assert.rejects(
+    fetchCategoryPages(
+      { id: '1', name: '电影' },
+      {
+        fetchImpl,
+        wait: async () => {}
+      }
+    ),
+    /Missing pagination field/
+  );
+});
+
+test('fails when API total does not match fetched records', async () => {
+  const fetchImpl = createFetch(
+    [{ type_id: 1, type_name: '电影' }],
+    async () => ({
+      total: 250,
+      pagecount: 2,
+      list: createItems(1, 100)
+    })
+  );
+
+  await assert.rejects(
+    fetchCategoryPages(
+      { id: '1', name: '电影' },
+      {
+        fetchImpl,
+        wait: async () => {}
+      }
+    ),
+    /Record count mismatch/
+  );
+});
+
+test('fails when a page is repeated', async () => {
+  const repeated = createItems(1, 2);
+
+  const fetchImpl = createFetch(
+    [{ type_id: 1, type_name: '电影' }],
+    async () => ({
+      total: 4,
+      pagecount: 2,
+      list: repeated
+    })
+  );
+
+  await assert.rejects(
+    fetchCategoryPages(
+      { id: '1', name: '电影' },
+      {
+        fetchImpl,
+        wait: async () => {}
+      }
+    ),
+    /Repeated page detected/
+  );
+});
+
+test('incremental mode requests the 24-hour API filter', async () => {
+  const directory = makeTempDir();
+
+  try {
+    const initialFetch = createFetch(
+      [{ type_id: 1, type_name: '电影' }],
+      async () => ({
+        total: 1,
+        pagecount: 1,
+        list: createItems(1, 1)
+      })
+    );
+
+    await runSync({
+      rootDir: directory,
+      fullSync: true,
+      fetchImpl: initialFetch,
+      wait: async () => {}
+    });
+
+    let observedHours = null;
+
+    const incrementalFetch = createFetch(
+      [{ type_id: 1, type_name: '电影' }],
+      async ({ hours }) => {
+        observedHours = hours;
+
+        return {
+          total: 1,
+          pagecount: 1,
+          list: createItems(2, 1)
+        };
+      }
+    );
+
+    await runSync({
+      rootDir: directory,
+      fullSync: false,
+      fetchImpl: incrementalFetch,
+      wait: async () => {}
+    });
+
+    assert.equal(observedHours, '24');
+  } finally {
+    fs.rmSync(directory, {
+      recursive: true,
+      force: true
+    });
+  }
+});
+
+test('failed category preserves previously committed files', async () => {
+  const directory = makeTempDir();
+
+  try {
+    const initialFetch = createFetch(
+      [{ type_id: 1, type_name: '电影' }],
+      async () => ({
+        total: 1,
+        pagecount: 1,
+        list: createItems(1, 1)
+      })
+    );
+
+    await runSync({
+      rootDir: directory,
+      fullSync: true,
+      fetchImpl: initialFetch,
+      wait: async () => {}
+    });
+
+    const before = new Map();
+
+    for (const file of fs.readdirSync(directory)) {
+      const fullPath = path.join(directory, file);
+
+      if (fs.statSync(fullPath).isFile()) {
+        before.set(file, fs.readFileSync(fullPath));
+      }
+    }
+
+    const failingFetch = createFetch(
+      [
+        { type_id: 1, type_name: '电影' },
+        { type_id: 2, type_name: '电视剧' }
+      ],
+      async ({ category }) => {
+        if (category === '1') {
+          return {
+            total: 1,
+            pagecount: 1,
+            list: createItems(10, 1)
+          };
+        }
+
+        throw new Error('Simulated API failure');
+      }
+    );
+
+    await assert.rejects(
+      runSync({
+        rootDir: directory,
+        fullSync: true,
+        fetchImpl: failingFetch,
+        wait: async () => {}
+      }),
+      /Request failed after 3 attempts/
+    );
+
+    for (const [file, oldContent] of before) {
+      const current = fs.readFileSync(
+        path.join(directory, file)
+      );
+
+      assert.deepEqual(current, oldContent);
+    }
+
+    assert.equal(
+      readState(directory).status,
+      'completed'
+    );
+  } finally {
+    fs.rmSync(directory, {
+      recursive: true,
+      force: true
+    });
+  }
+});
+
+test('unknown JSON files are never deleted', async () => {
+  const directory = makeTempDir();
+
+  try {
+    const protectedFile = path.join(
+      directory,
+      'important.json'
+    );
+
+    fs.writeFileSync(
+      protectedFile,
+      JSON.stringify({ keep: true })
+    );
+
+    const fetchImpl = createFetch(
+      [{ type_id: 1, type_name: '电影' }],
+      async () => ({
+        total: 1,
+        pagecount: 1,
+        list: createItems(1, 1)
+      })
+    );
+
+    await runSync({
+      rootDir: directory,
+      fullSync: true,
+      fetchImpl,
+      wait: async () => {}
+    });
+
+    assert.equal(fs.existsSync(protectedFile), true);
+
+    assert.deepEqual(
+      JSON.parse(fs.readFileSync(protectedFile, 'utf8')),
+      { keep: true }
+    );
+  } finally {
+    fs.rmSync(directory, {
+      recursive: true,
+      force: true
+    });
+  }
+});
+
