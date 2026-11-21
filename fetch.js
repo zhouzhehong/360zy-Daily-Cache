@@ -232,6 +232,14 @@ function readState(rootDir) {
   if (!state || typeof state !== 'object' || !Array.isArray(state.managedFiles)) {
     throw new Error('Existing sync_state.json is invalid');
   }
+  state.managedFiles = [
+    ...new Set(
+      state.managedFiles.filter(fileName =>
+        fileName !== STATE_FILE &&
+        fileName !== CATEGORIES_FILE
+      )
+    )
+  ];
   for (const fileName of state.managedFiles) validateManagedFile(fileName);
   return state;
 }
