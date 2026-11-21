@@ -69,9 +69,25 @@ test('fails when pagination metadata is missing', async () => {
 });
 
 test('fails when API total does not match fetched records', async () => {
-  const fetchImpl = createFetch([{ type_id: 1, type_name: '电影' }], async () => ({ total: 250, pagecount: 2, list: createItems(1, 100) }));
+  const fetchImpl = createFetch(
+    [{ type_id: 1, type_name: '电影' }],
+    async ({ page }) => ({
+      total: 250,
+      pagecount: 2,
+      list: page === 1
+        ? createItems(1, 100)
+        : createItems(101, 100)
+    })
+  );
+
   await assert.rejects(
-    fetchCategoryPages({ id: '1', name: '电影' }, { fetchImpl, wait: async () => {} }),
+    fetchCategoryPages(
+      { id: '1', name: '电影' },
+      {
+        fetchImpl,
+        wait: async () => {}
+      }
+    ),
     /Record count mismatch/
   );
 });
