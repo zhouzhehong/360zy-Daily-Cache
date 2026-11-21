@@ -196,3 +196,26 @@ test('readState ignores legacy metadata files in managedFiles', () => {
     });
   }
 });
+
+test('accepts an empty category with zero pages', async () => {
+  const result = await fetchCategoryPages(
+    { id: '1', name: '电影' },
+    {
+      wait: async () => {},
+      fetchImpl: async () => ({
+        ok: true,
+        json: async () => ({
+          total: 0,
+          pagecount: 0,
+          list: []
+        })
+      })
+    }
+  );
+
+  assert.equal(result.items.size, 0);
+  assert.equal(result.stats.total, 0);
+  assert.equal(result.stats.pagecount, 0);
+  assert.equal(result.stats.successful_pages, 0);
+  assert.equal(result.stats.complete, true);
+});
