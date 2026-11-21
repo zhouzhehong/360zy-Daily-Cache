@@ -1,1 +1,10 @@
-[{"name":"铺铺Poker","id":"58810"},{"name":"Project XY","id":"105543"}]
+[
+  {
+    "id": "58810",
+    "name": "铺铺Poker"
+  },
+  {
+    "id": "105543",
+    "name": "Project XY"
+  }
+]

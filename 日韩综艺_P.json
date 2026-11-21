@@ -1,1 +1,14 @@
-[{"name":"配送来了-What Song Express","id":"106254"},{"name":"朴宝剑的Cantabile","id":"74250"},{"name":"PLANET C：HOME RACE","id":"86412"}]
+[
+  {
+    "id": "74250",
+    "name": "朴宝剑的Cantabile"
+  },
+  {
+    "id": "86412",
+    "name": "PLANET C：HOME RACE"
+  },
+  {
+    "id": "106254",
+    "name": "配送来了-What Song Express"
+  }
+]
