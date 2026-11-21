@@ -13,7 +13,7 @@ on:
         default: false
 
 concurrency:
-  group: sync-data
+  group: 360zy-data-sync-main
   cancel-in-progress: false
 
 permissions:
@@ -22,35 +22,77 @@ permissions:
 jobs:
   sync:
     runs-on: ubuntu-latest
+    timeout-minutes: 360
+
     steps:
-      - uses: actions/checkout@v3
-      
-      - name: Setup Node
-        uses: actions/setup-node@v3
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
-          node-version: '18'
-          
-      - name: Install deps
-        run: npm install pinyin-pro
-        
-      - name: Determine Sync Mode
-        id: sync_mode
+          ref: main
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: node --test fetch.test.js
+
+      - name: Determine sync mode
+        shell: bash
         run: |
-          if [ "${{ github.event_name }}" == "schedule" ] && [ "${{ github.event.schedule }}" == "0 18 * * 0" ]; then
-            echo "FULL_SYNC=true" >> $GITHUB_ENV
-          elif [ "${{ github.event_name }}" == "workflow_dispatch" ] && [ "${{ github.event.inputs.force_full }}" == "true" ]; then
-            echo "FULL_SYNC=true" >> $GITHUB_ENV
+          if [[ "${GITHUB_EVENT_NAME}" == "schedule" && "${{ github.event.schedule }}" == "0 18 * * 0" ]]; then
+            echo "FULL_SYNC=true" >> "$GITHUB_ENV"
+          elif [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" && "${{ inputs.force_full }}" == "true" ]]; then
+            echo "FULL_SYNC=true" >> "$GITHUB_ENV"
+          elif [[ ! -f sync_state.json ]]; then
+            echo "FULL_SYNC=true" >> "$GITHUB_ENV"
           else
-            echo "FULL_SYNC=false" >> $GITHUB_ENV
+            echo "FULL_SYNC=false" >> "$GITHUB_ENV"
           fi
-          
-      - name: Run Sync Script
+
+      - name: Run synchronization
         run: node fetch.js
-        
-      - name: Commit Changes
+
+      - name: Validate generated state
         run: |
-          git config user.name "GitHub Action"
-          git config user.email "action@github.com"
-          git add -A
-          git commit -m "Update data (Mode: ${{ env.FULL_SYNC == 'true' && 'Full' || 'Incremental' }})" || exit 0
-          git push
+          node - <<'NODE'
+          const fs = require('fs');
+          const state = JSON.parse(fs.readFileSync('sync_state.json', 'utf8'));
+          if (state.status !== 'completed') throw new Error('Sync state is not completed');
+          if (!Array.isArray(state.categories) || !Array.isArray(state.managedFiles)) throw new Error('Invalid sync state structure');
+          if (state.statistics.completedCategories !== state.statistics.totalCategories) throw new Error('Not all categories completed');
+          if (state.statistics.failedCategories !== 0 || state.statistics.failedPages !== 0) throw new Error('Sync contains failures');
+          for (const file of state.managedFiles) {
+            if (typeof file !== 'string' || file.includes('..') || file.includes('/') || file.includes('\\') || !file.endsWith('.json') || !fs.existsSync(file)) {
+              throw new Error(`Invalid or missing data file: ${file}`);
+            }
+            const data = JSON.parse(fs.readFileSync(file, 'utf8'));
+            if (!Array.isArray(data)) throw new Error(`Data file is not an array: ${file}`);
+          }
+          console.log('Generated data validation passed');
+          NODE
+
+      - name: Commit generated data
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          node - <<'NODE'
+          const fs = require('fs');
+          const { spawnSync } = require('child_process');
+          const state = JSON.parse(fs.readFileSync('sync_state.json', 'utf8'));
+          const files = ['sync_state.json', 'categories.json', ...state.managedFiles];
+          const result = spawnSync('git', ['add', '--', ...new Set(files)], { stdio: 'inherit' });
+          if (result.status !== 0) process.exit(result.status || 1);
+          NODE
+          if git diff --cached --quiet; then
+            echo "No data changes to commit"
+            exit 0
+          fi
+          git commit -m "Update 360zy data (${FULL_SYNC})"
+          git push origin HEAD:main
