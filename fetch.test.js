@@ -166,3 +166,33 @@ test('unknown JSON files are never deleted', async () => {
     fs.rmSync(directory, { recursive: true, force: true });
   }
 });
+
+test('readState ignores legacy metadata files in managedFiles', () => {
+  const directory = makeTempDir();
+
+  try {
+    fs.writeFileSync(
+      path.join(directory, 'sync_state.json'),
+      JSON.stringify({
+        status: 'completed',
+        managedFiles: [
+          'categories.json',
+          'sync_state.json',
+          '电影_A.json'
+        ]
+      })
+    );
+
+    const state = readState(directory);
+
+    assert.deepEqual(
+      state.managedFiles,
+      ['电影_A.json']
+    );
+  } finally {
+    fs.rmSync(directory, {
+      recursive: true,
+      force: true
+    });
+  }
+});
