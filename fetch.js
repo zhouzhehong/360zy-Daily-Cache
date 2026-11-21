@@ -43,6 +43,13 @@ function validateManagedFile(file) {
   return file;
 }
 
+function validateOutputFile(file) {
+  if (file === STATE_FILE || file === CATEGORIES_FILE) {
+    return file;
+  }
+  return validateManagedFile(file);
+}
+
 async function fetchJson(url, fetchImpl = global.fetch) {
   if (typeof fetchImpl !== 'function') throw new Error('Fetch API is unavailable');
   let lastError;
@@ -273,14 +280,14 @@ function commitTransaction(rootDir, newFiles, obsoleteFiles) {
 
   const targets = new Set();
   for (const [fileName, content] of newFiles) {
-    validateManagedFile(fileName);
+    validateOutputFile(fileName);
     if (typeof content !== 'string') throw new Error(`Invalid staged content: ${fileName}`);
     JSON.parse(content);
     fs.writeFileSync(path.join(stageDir, fileName), content, 'utf8');
     targets.add(fileName);
   }
   for (const fileName of obsoleteFiles) {
-    validateManagedFile(fileName);
+    validateOutputFile(fileName);
     targets.add(fileName);
   }
 
