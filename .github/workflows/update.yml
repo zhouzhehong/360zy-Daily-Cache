@@ -1,46 +1,56 @@
-name: Full Sync
+name: Full and Incremental Sync
 
 on:
   schedule:
-    - cron: '0 18 * * *'
+    - cron: '*/30 * * * *'
+    - cron: '0 18 * * 0'
   workflow_dispatch:
+    inputs:
+      force_full:
+        description: 'Force full synchronization'
+        required: false
+        type: boolean
+        default: false
+
+concurrency:
+  group: sync-data
+  cancel-in-progress: false
 
 permissions:
   contents: write
 
-concurrency:
-  group: full-sync
-  cancel-in-progress: false
-
 jobs:
-  update:
+  sync:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          ref: main
-
+      - uses: actions/checkout@v3
+      
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v3
         with:
           node-version: '18'
-
+          
       - name: Install deps
         run: npm install pinyin-pro
-
-      - name: Run Script
+        
+      - name: Determine Sync Mode
+        id: sync_mode
+        run: |
+          if [ "${{ github.event_name }}" == "schedule" ] && [ "${{ github.event.schedule }}" == "0 18 * * 0" ]; then
+            echo "FULL_SYNC=true" >> $GITHUB_ENV
+          elif [ "${{ github.event_name }}" == "workflow_dispatch" ] && [ "${{ github.event.inputs.force_full }}" == "true" ]; then
+            echo "FULL_SYNC=true" >> $GITHUB_ENV
+          else
+            echo "FULL_SYNC=false" >> $GITHUB_ENV
+          fi
+          
+      - name: Run Sync Script
         run: node fetch.js
-
+        
       - name: Commit Changes
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A -- '*.json'
-          if git diff --cached --quiet; then
-            echo "No data changes"
-            exit 0
-          fi
-          git commit -m "Update data"
-          git push origin HEAD:main
+          git config user.name "GitHub Action"
+          git config user.email "action@github.com"
+          git add -A
+          git commit -m "Update data (Mode: ${{ env.FULL_SYNC == 'true' && 'Full' || 'Incremental' }})" || exit 0
+          git push
