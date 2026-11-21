@@ -179,6 +179,13 @@ async function fetchCategoryPages(category, options = {}) {
       }
     }
 
+    if (page === 1 && metadata.pagecount === 0) {
+      if (metadata.total !== 0 || list.length !== 0) {
+        throw new Error(`Invalid empty category response: ${category.name}`);
+      }
+      break;
+    }
+
     if (list.length > PAGE_SIZE) throw new Error(`Category ${category.name}, page ${page} exceeded page size`);
 
     stats.successful_pages++;
