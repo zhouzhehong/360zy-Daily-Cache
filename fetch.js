@@ -1,372 +1,272 @@
-const fs = require("fs");
-const path = require("path");
-const { pinyin } = require("pinyin-pro");
+const fs = require('fs');
+const path = require('path');
+const { pinyin } = require('pinyin-pro');
 
-const API_BASE = "https://360zy.com/api.php/provide/vod/";
-const STATE_FILE = "sync_state.json";
-const CATEGORIES_FILE = "categories.json";
-const PAGE_SIZE = 100;
+const API_BASE = 'https://360zy.com/api.php/provide/vod/';
+const STATE_FILE = 'sync_state.json';
 const MAX_PAGES = 10000;
-const EXCLUDED_CATEGORY_PATTERN = /福利|伦理/;
-const RESERVED_FILES = new Set([
-  "package.json",
-  "package-lock.json",
-  STATE_FILE,
-  CATEGORIES_FILE
-]);
 
 const sleep = (min = 1500, max = 3500) => {
   const ms = Math.floor(Math.random() * (max - min + 1)) + min;
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise(r => setTimeout(r, ms));
 };
 
 function getLetter(name) {
-  if (typeof name !== "string" || !name.trim()) return "Other";
-
-  const firstChar = Array.from(name.trim())[0];
+  if (!name) return 'Other';
+  const firstChar = name[0];
   if (/[a-zA-Z]/.test(firstChar)) return firstChar.toUpperCase();
-
   try {
-    const result = pinyin(firstChar, {
-      pattern: "first",
-      toneType: "none"
-    });
-    const initial = String(result || "").charAt(0);
-    return /^[a-z]$/i.test(initial) ? initial.toUpperCase() : "Other";
-  } catch {
-    return "Other";
-  }
-}
-
-function validateCategoryName(name) {
-  if (
-    typeof name !== "string" ||
-    !name.trim() ||
-    name !== name.trim() ||
-    /[\/\\\x00-\x1F\x7F]/.test(name) ||
-    name === "." ||
-    name === ".."
-  ) {
-    throw new Error(`Invalid category name: ${String(name)}`);
-  }
-
-  return name;
+    const py = pinyin(firstChar, { pattern: 'first', toneType: 'none' });
+    return py && /[a-zA-Z]/.test(py[0]) ? py[0].toUpperCase() : 'Other';
+  } catch (e) { return 'Other'; }
 }
 
 async function fetchJson(url) {
-  let response;
-
   try {
-    response = await fetch(url, {
-      headers: {
-        "User-Agent": "Mozilla/5.0",
-        Referer: "https://360zy.com/"
-      },
-      signal: AbortSignal.timeout(15000)
-    });
-  } catch (error) {
-    throw new Error(`API network request failed: ${error.message}`);
+    const res = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0', 'Referer': 'https://360zy.com/' } });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (e) {
+    throw new Error(`Fetch failed for ${url}: ${e.message}`);
   }
+}
 
-  if (!response.ok) {
-    throw new Error(`API returned HTTP ${response.status}: ${url}`);
-  }
+function validateVideoList(data, url) {
+  if (!data || typeof data !== 'object') throw new Error(`Invalid response from ${url}`);
+  const list = data.list || data.data || [];
+  if (!Array.isArray(list)) throw new Error(`List is not an array from ${url}`);
+  return list;
+}
 
-  let data;
-
-  try {
-    data = await response.json();
-  } catch {
-    throw new Error(`API returned invalid JSON: ${url}`);
-  }
-
-  if (!data || typeof data !== "object" || Array.isArray(data)) {
-    throw new Error(`API returned an invalid response object: ${url}`);
-  }
-
-  return data;
+function normalizeVideo(rawItem) {
+  if (!rawItem || !rawItem.vod_name || !rawItem.vod_id) return null;
+  const id = String(rawItem.vod_id).trim();
+  const name = String(rawItem.vod_name).trim();
+  if (!id || !name) return null;
+  return { id, name };
 }
 
 async function getCategories() {
   const data = await fetchJson(`${API_BASE}?ac=list`);
-
-  if (!Array.isArray(data.class)) {
-    throw new Error("Category API response does not contain a valid class array");
+  if (data && data.class && Array.isArray(data.class)) {
+    return data.class.map(c => ({ id: c.type_id, name: c.type_name })).filter(c => c.name && !/福利|伦理/.test(c.name));
   }
-
-  const categories = [];
-  const seen = new Set();
-
-  for (const item of data.class) {
-    if (!item || item.type_id === undefined || item.type_id === null) continue;
-    if (typeof item.type_name !== "string") continue;
-
-    const name = validateCategoryName(item.type_name);
-    if (EXCLUDED_CATEGORY_PATTERN.test(name)) continue;
-    if (seen.has(name)) continue;
-
-    seen.add(name);
-    categories.push({
-      id: String(item.type_id),
-      name
-    });
-  }
-
-  if (categories.length === 0) {
-    throw new Error("Category API returned no usable categories");
-  }
-
-  return categories;
+  return [{ id: 1, name: '电影' }, { id: 2, name: '连续剧' }, { id: 4, name: '动漫' }];
 }
 
-function readJsonFile(fileName, fallback) {
-  try {
-    return JSON.parse(fs.readFileSync(fileName, "utf8"));
-  } catch {
-    return fallback;
-  }
-}
-
-function readExistingCategoryItems(categoryName) {
-  const prefix = `${categoryName}_`;
-  const files = fs.readdirSync(".").filter(file =>
-    file.startsWith(prefix) &&
-    file.endsWith(".json") &&
-    !RESERVED_FILES.has(file)
-  );
-
-  const itemsById = new Map();
-
-  for (const file of files) {
-    const letter = file.slice(prefix.length, -5);
-    if (!/^(?:[A-Z]|Other)$/.test(letter)) continue;
-
-    const content = readJsonFile(file, null);
-    if (!Array.isArray(content)) {
-      throw new Error(`Existing data file is invalid: ${file}`);
-    }
-
-    for (const item of content) {
-      if (!item || item.id === undefined || item.id === null || !String(item.id).trim()) continue;
-      if (typeof item.name !== "string" || !item.name.trim()) continue;
-
-      itemsById.set(String(item.id), {
-        name: item.name,
-        id: String(item.id)
-      });
-    }
-  }
-
-  return itemsById;
-}
-
-function validateVideoList(data, url) {
-  if (!Array.isArray(data.list)) {
-    throw new Error(`Video list API returned an invalid list: ${url}`);
-  }
-
-  return data.list;
-}
-
-function normalizeVideo(item) {
-  if (!item || item.vod_id === undefined || item.vod_id === null) return null;
-  if (typeof item.vod_name !== "string" || !item.vod_name.trim()) return null;
-
-  const id = String(item.vod_id).trim();
-  if (!id) return null;
-
-  return {
-    name: item.vod_name.trim(),
-    id
-  };
-}
-
-async function fetchAllCategoryItems(category) {
+async function fetchCategoryPages(category, options = {}) {
+  const { hours = null, pageSize = 100 } = options;
   const result = new Map();
+  const stats = {
+    category_id: category.id,
+    category_name: category.name,
+    total: null,
+    pagecount: null,
+    raw_count: 0,
+    normalized_count: 0,
+    unique_count: 0,
+    successful_pages: 0,
+    failed_pages: 0,
+    complete: false,
+    last_sync: new Date().toISOString()
+  };
+
   let page = 1;
-  let totalPages = null;
+  let expectedPages = null;
+  let totalCount = null;
 
   while (page <= MAX_PAGES) {
+    const url = new URL(API_BASE);
+    url.searchParams.set('ac', 'videolist');
+    url.searchParams.set('t', String(category.id));
+    url.searchParams.set('pg', String(page));
+    url.searchParams.set('pagesize', String(pageSize));
+    if (hours !== null) url.searchParams.set('h', String(hours));
+
     await sleep();
 
-    const url = new URL(API_BASE);
-    url.searchParams.set("ac", "videolist");
-    url.searchParams.set("t", category.id);
-    url.searchParams.set("pg", String(page));
-    url.searchParams.set("pagesize", String(PAGE_SIZE));
+    let data;
+    try {
+      data = await fetchJson(url.toString());
+    } catch (error) {
+      stats.failed_pages++;
+      throw new Error(`Category ${category.id} failed at page ${page}: ${error.message}`);
+    }
 
-    const data = await fetchJson(url.toString());
     const list = validateVideoList(data, url.toString());
 
-    if (page === 1 && data.total !== undefined && data.total !== null && data.total !== "") {
-      const total = Number(data.total);
-      if (!Number.isFinite(total) || total < 0) {
-        throw new Error(`Invalid total count for category: ${category.name}`);
-      }
-      totalPages = Math.ceil(total / PAGE_SIZE);
+    if (page === 1) {
+      if (data.total !== undefined && data.total !== null) totalCount = Number(data.total);
+      if (data.pagecount !== undefined && data.pagecount !== null) expectedPages = Number(data.pagecount);
+      stats.total = totalCount;
+      stats.pagecount = expectedPages;
     }
 
     if (list.length === 0) {
-      if (totalPages !== null && page <= totalPages) {
-        if (page === 1 && totalPages === 0) break;
-        throw new Error(`Pagination ended before all records were fetched: ${category.name}, page ${page}`);
-      }
+      stats.successful_pages++;
       break;
     }
 
     for (const rawItem of list) {
+      stats.raw_count++;
       const item = normalizeVideo(rawItem);
-      if (item) result.set(item.id, item);
+      if (item) {
+        stats.normalized_count++;
+        result.set(item.id, item);
+      }
     }
 
-    if (totalPages !== null) {
-      if (page >= totalPages) break;
-    } else if (list.length < PAGE_SIZE) {
-      break;
+    stats.successful_pages++;
+
+    if (expectedPages !== null) {
+      if (page >= expectedPages) break;
+    } else if (totalCount !== null) {
+      if (page * pageSize >= totalCount) break;
+    } else {
+      if (list.length < pageSize) break;
     }
 
     page++;
   }
 
   if (page > MAX_PAGES) {
-    throw new Error(`Pagination exceeded the safety limit for category: ${category.name}`);
+    throw new Error(`Category ${category.id} exceeded MAX_PAGES`);
   }
 
+  if (expectedPages !== null && stats.successful_pages < expectedPages) {
+    throw new Error(`Category ${category.id} incomplete: fetched ${stats.successful_pages} pages, expected ${expectedPages}`);
+  }
+
+  stats.unique_count = result.size;
+  stats.complete = true;
+
+  return { items: result, stats };
+}
+
+async function fetchAllCategoryItems(category) {
+  const result = await fetchCategoryPages(category);
   return result;
 }
 
 async function fetchRecentCategoryItems(category) {
-  await sleep();
-
-  const url = new URL(API_BASE);
-  url.searchParams.set("ac", "videolist");
-  url.searchParams.set("t", category.id);
-  url.searchParams.set("h", "24");
-  url.searchParams.set("pagesize", String(PAGE_SIZE));
-
-  const data = await fetchJson(url.toString());
-  const list = validateVideoList(data, url.toString());
-  const result = new Map();
-
-  for (const rawItem of list) {
-    const item = normalizeVideo(rawItem);
-    if (item) result.set(item.id, item);
-  }
-
+  const result = await fetchCategoryPages(category, { hours: 24 });
   return result;
 }
 
-function buildCategoryFiles(category, itemsById, outputFiles) {
-  const grouped = new Map();
+function readExistingCategoryItems(categoryName) {
+  const items = new Map();
+  const files = fs.readdirSync('.').filter(f => f.startsWith(`${categoryName}_`) && f.endsWith('.json'));
+  for (const file of files) {
+    try {
+      const content = JSON.parse(fs.readFileSync(file, 'utf8'));
+      if (Array.isArray(content)) {
+        for (const item of content) {
+          const normalized = normalizeVideo(item);
+          if (normalized) items.set(normalized.id, normalized);
+        }
+      }
+    } catch (e) {}
+  }
+  return items;
+}
 
-  for (const item of itemsById.values()) {
+function writeCategoryItemsAtomically(categoryName, itemsMap) {
+  const grouped = {};
+  for (const item of itemsMap.values()) {
     const letter = getLetter(item.name);
-    if (!grouped.has(letter)) grouped.set(letter, []);
-    grouped.get(letter).push({
-      name: item.name,
-      id: String(item.id)
-    });
+    if (!grouped[letter]) grouped[letter] = [];
+    grouped[letter].push(item);
   }
 
-  for (const [letter, items] of grouped) {
-    items.sort((a, b) => {
-      const nameCompare = a.name.localeCompare(b.name, "zh-Hans");
-      return nameCompare || String(a.id).localeCompare(String(b.id), "en");
-    });
-
-    const fileName = `${category.name}_${letter}.json`;
-    outputFiles.set(fileName, JSON.stringify(items));
+  const managedFiles = [];
+  for (const letter in grouped) {
+    const fileName = `${categoryName}_${letter}.json`;
+    const tempName = `${fileName}.tmp`;
+    fs.writeFileSync(tempName, JSON.stringify(grouped[letter]));
+    fs.renameSync(tempName, fileName);
+    managedFiles.push(fileName);
   }
+  return managedFiles;
 }
 
-function writeFileAtomically(fileName, content) {
-  const target = path.resolve(".", fileName);
-  const temporary = `${target}.${process.pid}.tmp`;
-
-  fs.writeFileSync(temporary, content, "utf8");
-  fs.renameSync(temporary, target);
-}
-
-function isGeneratedDataFile(fileName) {
-  if (RESERVED_FILES.has(fileName)) return false;
-  if (!fileName.endsWith(".json")) return false;
-  return /_(?:[A-Z]|Other)\.json$/.test(fileName);
-}
-
-function removeStaleDataFiles(expectedFiles) {
-  const expected = new Set(expectedFiles);
-
-  for (const fileName of fs.readdirSync(".")) {
-    if (!isGeneratedDataFile(fileName) || expected.has(fileName)) continue;
-    fs.unlinkSync(fileName);
+function removeStaleDataFiles(currentManagedFiles) {
+  const allFiles = fs.readdirSync('.');
+  const currentSet = new Set(currentManagedFiles);
+  for (const file of allFiles) {
+    if (file.endsWith('.json') && file !== 'package.json' && file !== 'package-lock.json' && file !== 'sync_state.json' && file !== 'categories.json') {
+      if (!currentSet.has(file)) {
+        fs.unlinkSync(file);
+      }
+    }
   }
-}
-
-function loadState() {
-  if (!fs.existsSync(STATE_FILE)) return null;
-
-  const state = readJsonFile(STATE_FILE, null);
-  if (!state || state.status !== "completed") {
-    throw new Error("Existing sync_state.json is invalid; refusing to assume this is a first run");
-  }
-
-  return state;
 }
 
 async function main() {
-  const previousState = loadState();
-  const isFirstRun = previousState === null;
+  const isFirstRun = !fs.existsSync(STATE_FILE);
+  const isFullSync = isFirstRun || process.env.FULL_SYNC === 'true';
+
   const categories = await getCategories();
-  const outputFiles = new Map();
+  const statsArray = [];
+  const allManagedFiles = [];
 
-  for (const category of categories) {
-    console.log(`Syncing category: ${category.name}`);
+  for (const cat of categories) {
+    try {
+      let existingItems = new Map();
+      if (!isFullSync) {
+        existingItems = readExistingCategoryItems(cat.name);
+      }
 
-    const existingItems = isFirstRun
-      ? new Map()
-      : readExistingCategoryItems(category.name);
+      const fetchResult = isFullSync
+        ? await fetchAllCategoryItems(cat)
+        : await fetchRecentCategoryItems(cat);
 
-    const fetchedItems = isFirstRun
-      ? await fetchAllCategoryItems(category)
-      : await fetchRecentCategoryItems(category);
+      const merged = new Map(existingItems);
+      for (const [id, item] of fetchResult.items) {
+        merged.set(id, item);
+      }
 
-    const mergedItems = new Map(existingItems);
-
-    for (const [id, item] of fetchedItems) {
-      mergedItems.set(id, item);
+      const managed = writeCategoryItemsAtomically(cat.name, merged);
+      allManagedFiles.push(...managed);
+      
+      fetchResult.stats.unique_count = merged.size;
+      statsArray.push(fetchResult.stats);
+      
+    } catch (e) {
+      console.error(`Failed to process category ${cat.name}: ${e.message}`);
+      process.exit(1);
     }
-
-    buildCategoryFiles(category, mergedItems, outputFiles);
-    console.log(`Prepared ${mergedItems.size} records for ${category.name}`);
-    await sleep(2000, 4000);
   }
 
-  const categoryNames = categories.map(category => category.name);
-  const expectedDataFiles = [...outputFiles.keys()];
-
-  for (const [fileName, content] of outputFiles) {
-    writeFileAtomically(fileName, content);
+  if (isFullSync) {
+    removeStaleDataFiles(allManagedFiles);
   }
 
-  writeFileAtomically(
-    CATEGORIES_FILE,
-    JSON.stringify(categoryNames)
-  );
-
-  removeStaleDataFiles(expectedDataFiles);
+  const existingCats = [...new Set(allManagedFiles.map(f => f.split('_')[0]))];
+  fs.writeFileSync('categories.json', JSON.stringify(existingCats));
 
   const state = {
-    status: "completed",
+    status: 'completed',
     lastSync: new Date().toISOString(),
-    categories: categoryNames,
-    managedFiles: [...expectedDataFiles, CATEGORIES_FILE]
+    syncMode: isFullSync ? 'full' : 'incremental',
+    categories: statsArray.map(s => s.category_name),
+    managedFiles: allManagedFiles,
+    statistics: {
+      totalCategories: categories.length,
+      completedCategories: statsArray.filter(s => s.complete).length,
+      failedCategories: categories.length - statsArray.filter(s => s.complete).length,
+      rawCount: statsArray.reduce((acc, s) => acc + s.raw_count, 0),
+      normalizedCount: statsArray.reduce((acc, s) => acc + s.normalized_count, 0),
+      uniqueCount: statsArray.reduce((acc, s) => acc + s.unique_count, 0),
+      successfulPages: statsArray.reduce((acc, s) => acc + s.successful_pages, 0),
+      failedPages: statsArray.reduce((acc, s) => acc + s.failed_pages, 0)
+    }
   };
 
-  writeFileAtomically(STATE_FILE, JSON.stringify(state));
-  console.log(`Sync completed: ${categories.length} categories, ${expectedDataFiles.length} data files`);
+  fs.writeFileSync(STATE_FILE, JSON.stringify(state, null, 2));
+  console.log('Sync completed successfully.');
 }
 
-main().catch(error => {
-  console.error(error && error.stack ? error.stack : String(error));
-  process.exitCode = 1;
+main().catch(e => {
+  console.error('Fatal sync error:', e);
+  process.exit(1);
 });
