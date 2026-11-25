@@ -1,6 +1,6 @@
 {
   "status": "completed",
-  "lastSync": "2026-11-25T10:06:34.211Z",
+  "lastSync": "2026-11-25T20:03:59.813Z",
   "syncMode": "incremental",
   "categories": [
     "电影",
@@ -926,10 +926,10 @@
     "totalCategories": 50,
     "completedCategories": 50,
     "failedCategories": 0,
-    "rawCount": 165,
-    "normalizedCount": 165,
-    "uniqueCount": 74144,
-    "successfulPages": 18,
+    "rawCount": 171,
+    "normalizedCount": 171,
+    "uniqueCount": 74150,
+    "successfulPages": 17,
     "failedPages": 0
   },
   "categoryStatistics": [
@@ -945,7 +945,7 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-25T10:04:38.091Z"
+      "last_sync": "2026-11-25T20:02:06.393Z"
     },
     {
       "category_id": "2",
@@ -959,7 +959,7 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-25T10:04:40.348Z"
+      "last_sync": "2026-11-25T20:02:08.619Z"
     },
     {
       "category_id": "3",
@@ -973,7 +973,7 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-25T10:04:42.603Z"
+      "last_sync": "2026-11-25T20:02:10.845Z"
     },
     {
       "category_id": "4",
@@ -987,7 +987,7 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-25T10:04:44.856Z"
+      "last_sync": "2026-11-25T20:02:13.073Z"
     },
     {
       "category_id": "6",
@@ -1001,7 +1001,7 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-25T10:04:47.131Z"
+      "last_sync": "2026-11-25T20:02:15.294Z"
     },
     {
       "category_id": "7",
@@ -1015,7 +1015,7 @@
       "successful_pages": 1,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-25T10:04:49.534Z"
+      "last_sync": "2026-11-25T20:02:17.610Z"
     },
     {
       "category_id": "8",
@@ -1029,7 +1029,7 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-25T10:04:51.882Z"
+      "last_sync": "2026-11-25T20:02:19.913Z"
     },
     {
       "category_id": "9",
@@ -1043,7 +1043,7 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-25T10:04:54.195Z"
+      "last_sync": "2026-11-25T20:02:22.211Z"
     },
     {
       "category_id": "10",
@@ -1057,21 +1057,21 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-25T10:04:56.511Z"
+      "last_sync": "2026-11-25T20:02:24.480Z"
     },
     {
       "category_id": "11",
       "category_name": "剧情片",
       "mode": "incremental",
-      "total": 1,
+      "total": 3,
       "pagecount": 1,
-      "raw_count": 1,
-      "normalized_count": 1,
-      "unique_count": 16746,
+      "raw_count": 3,
+      "normalized_count": 3,
+      "unique_count": 16748,
       "successful_pages": 1,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-25T10:04:58.818Z"
+      "last_sync": "2026-11-25T20:02:26.747Z"
     },
     {
       "category_id": "12",
@@ -1085,21 +1085,21 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-25T10:05:01.266Z"
+      "last_sync": "2026-11-25T20:02:29.106Z"
     },
     {
       "category_id": "13",
       "category_name": "国产剧",
       "mode": "incremental",
-      "total": 14,
+      "total": 15,
       "pagecount": 1,
-      "raw_count": 14,
-      "normalized_count": 14,
+      "raw_count": 15,
+      "normalized_count": 15,
       "unique_count": 4605,
       "successful_pages": 1,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-25T10:05:03.593Z"
+      "last_sync": "2026-11-25T20:02:31.370Z"
     },
     {
       "category_id": "14",
@@ -1113,35 +1113,35 @@
       "successful_pages": 1,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-25T10:05:05.956Z"
+      "last_sync": "2026-11-25T20:02:33.674Z"
     },
     {
       "category_id": "15",
       "category_name": "韩国剧",
       "mode": "incremental",
-      "total": 7,
+      "total": 8,
       "pagecount": 1,
-      "raw_count": 7,
-      "normalized_count": 7,
-      "unique_count": 339,
+      "raw_count": 8,
+      "normalized_count": 8,
+      "unique_count": 341,
       "successful_pages": 1,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-25T10:05:08.245Z"
+      "last_sync": "2026-11-25T20:02:35.910Z"
     },
     {
       "category_id": "16",
       "category_name": "欧美剧",
       "mode": "incremental",
-      "total": 10,
+      "total": 8,
       "pagecount": 1,
-      "raw_count": 10,
-      "normalized_count": 10,
-      "unique_count": 958,
+      "raw_count": 8,
+      "normalized_count": 8,
+      "unique_count": 959,
       "successful_pages": 1,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-25T10:05:10.565Z"
+      "last_sync": "2026-11-25T20:02:38.184Z"
     },
     {
       "category_id": "17",
@@ -1155,7 +1155,7 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-25T10:05:12.894Z"
+      "last_sync": "2026-11-25T20:02:40.486Z"
     },
     {
       "category_id": "18",
@@ -1169,7 +1169,7 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-25T10:05:15.148Z"
+      "last_sync": "2026-11-25T20:02:42.712Z"
     },
     {
       "category_id": "20",
@@ -1183,7 +1183,7 @@
       "successful_pages": 1,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-25T10:05:17.453Z"
+      "last_sync": "2026-11-25T20:02:44.979Z"
     },
     {
       "category_id": "21",
@@ -1197,7 +1197,7 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-25T10:05:19.763Z"
+      "last_sync": "2026-11-25T20:02:47.225Z"
     },
     {
       "category_id": "22",
@@ -1211,7 +1211,7 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-25T10:05:22.029Z"
+      "last_sync": "2026-11-25T20:02:49.454Z"
     },
     {
       "category_id": "23",
@@ -1225,7 +1225,7 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-25T10:05:24.286Z"
+      "last_sync": "2026-11-25T20:02:51.673Z"
     },
     {
       "category_id": "24",
@@ -1239,7 +1239,7 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-25T10:05:26.561Z"
+      "last_sync": "2026-11-25T20:02:53.892Z"
     },
     {
       "category_id": "25",
@@ -1253,7 +1253,7 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-25T10:05:28.881Z"
+      "last_sync": "2026-11-25T20:02:56.161Z"
     },
     {
       "category_id": "26",
@@ -1267,7 +1267,7 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-25T10:05:31.201Z"
+      "last_sync": "2026-11-25T20:02:58.425Z"
     },
     {
       "category_id": "27",
@@ -1281,21 +1281,21 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-25T10:05:33.467Z"
+      "last_sync": "2026-11-25T20:03:00.648Z"
     },
     {
       "category_id": "28",
       "category_name": "短片",
       "mode": "incremental",
-      "total": 1,
-      "pagecount": 1,
-      "raw_count": 1,
-      "normalized_count": 1,
+      "total": 0,
+      "pagecount": 0,
+      "raw_count": 0,
+      "normalized_count": 0,
       "unique_count": 193,
-      "successful_pages": 1,
+      "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-25T10:05:35.781Z"
+      "last_sync": "2026-11-25T20:03:02.921Z"
     },
     {
       "category_id": "29",
@@ -1309,21 +1309,21 @@
       "successful_pages": 1,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-25T10:05:38.087Z"
+      "last_sync": "2026-11-25T20:03:05.140Z"
     },
     {
       "category_id": "30",
       "category_name": "台湾剧",
       "mode": "incremental",
-      "total": 4,
+      "total": 5,
       "pagecount": 1,
-      "raw_count": 4,
-      "normalized_count": 4,
-      "unique_count": 171,
+      "raw_count": 5,
+      "normalized_count": 5,
+      "unique_count": 172,
       "successful_pages": 1,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-25T10:05:40.398Z"
+      "last_sync": "2026-11-25T20:03:07.401Z"
     },
     {
       "category_id": "31",
@@ -1337,7 +1337,7 @@
       "successful_pages": 1,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-25T10:05:42.722Z"
+      "last_sync": "2026-11-25T20:03:09.682Z"
     },
     {
       "category_id": "32",
@@ -1351,63 +1351,63 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-25T10:05:45.046Z"
+      "last_sync": "2026-11-25T20:03:11.941Z"
     },
     {
       "category_id": "33",
       "category_name": "泰国剧",
       "mode": "incremental",
-      "total": 3,
+      "total": 9,
       "pagecount": 1,
-      "raw_count": 3,
-      "normalized_count": 3,
+      "raw_count": 9,
+      "normalized_count": 9,
       "unique_count": 300,
       "successful_pages": 1,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-25T10:05:47.364Z"
+      "last_sync": "2026-11-25T20:03:14.166Z"
     },
     {
       "category_id": "34",
       "category_name": "大陆综艺",
       "mode": "incremental",
-      "total": 14,
+      "total": 15,
       "pagecount": 1,
-      "raw_count": 14,
-      "normalized_count": 14,
+      "raw_count": 15,
+      "normalized_count": 15,
       "unique_count": 1573,
       "successful_pages": 1,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-25T10:05:49.672Z"
+      "last_sync": "2026-11-25T20:03:16.447Z"
     },
     {
       "category_id": "35",
       "category_name": "港台综艺",
       "mode": "incremental",
-      "total": 8,
+      "total": 7,
       "pagecount": 1,
-      "raw_count": 8,
-      "normalized_count": 8,
+      "raw_count": 7,
+      "normalized_count": 7,
       "unique_count": 50,
       "successful_pages": 1,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-25T10:05:52.191Z"
+      "last_sync": "2026-11-25T20:03:18.894Z"
     },
     {
       "category_id": "36",
       "category_name": "日韩综艺",
       "mode": "incremental",
-      "total": 4,
+      "total": 5,
       "pagecount": 1,
-      "raw_count": 4,
-      "normalized_count": 4,
+      "raw_count": 5,
+      "normalized_count": 5,
       "unique_count": 196,
       "successful_pages": 1,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-25T10:05:54.691Z"
+      "last_sync": "2026-11-25T20:03:21.328Z"
     },
     {
       "category_id": "37",
@@ -1421,21 +1421,21 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-25T10:05:57.006Z"
+      "last_sync": "2026-11-25T20:03:23.573Z"
     },
     {
       "category_id": "38",
       "category_name": "国产动漫",
       "mode": "incremental",
-      "total": 25,
+      "total": 24,
       "pagecount": 1,
-      "raw_count": 25,
-      "normalized_count": 25,
+      "raw_count": 24,
+      "normalized_count": 24,
       "unique_count": 2709,
       "successful_pages": 1,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-25T10:05:59.260Z"
+      "last_sync": "2026-11-25T20:03:25.799Z"
     },
     {
       "category_id": "39",
@@ -1449,21 +1449,21 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-25T10:06:01.825Z"
+      "last_sync": "2026-11-25T20:03:28.273Z"
     },
     {
       "category_id": "40",
       "category_name": "日韩动漫",
       "mode": "incremental",
-      "total": 9,
+      "total": 7,
       "pagecount": 1,
-      "raw_count": 9,
-      "normalized_count": 9,
+      "raw_count": 7,
+      "normalized_count": 7,
       "unique_count": 1427,
       "successful_pages": 1,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-25T10:06:04.295Z"
+      "last_sync": "2026-11-25T20:03:30.505Z"
     },
     {
       "category_id": "41",
@@ -1477,7 +1477,7 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-25T10:06:06.630Z"
+      "last_sync": "2026-11-25T20:03:32.787Z"
     },
     {
       "category_id": "42",
@@ -1491,7 +1491,7 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-25T10:06:08.941Z"
+      "last_sync": "2026-11-25T20:03:35.055Z"
     },
     {
       "category_id": "43",
@@ -1505,7 +1505,7 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-25T10:06:11.205Z"
+      "last_sync": "2026-11-25T20:03:37.269Z"
     },
     {
       "category_id": "45",
@@ -1519,7 +1519,7 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-25T10:06:13.474Z"
+      "last_sync": "2026-11-25T20:03:39.499Z"
     },
     {
       "category_id": "46",
@@ -1533,7 +1533,7 @@
       "successful_pages": 1,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-25T10:06:15.745Z"
+      "last_sync": "2026-11-25T20:03:41.730Z"
     },
     {
       "category_id": "47",
@@ -1547,7 +1547,7 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-25T10:06:18.336Z"
+      "last_sync": "2026-11-25T20:03:44.191Z"
     },
     {
       "category_id": "48",
@@ -1561,7 +1561,7 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-25T10:06:20.649Z"
+      "last_sync": "2026-11-25T20:03:46.453Z"
     },
     {
       "category_id": "49",
@@ -1575,7 +1575,7 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-25T10:06:22.908Z"
+      "last_sync": "2026-11-25T20:03:48.680Z"
     },
     {
       "category_id": "50",
@@ -1589,7 +1589,7 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-25T10:06:25.178Z"
+      "last_sync": "2026-11-25T20:03:50.903Z"
     },
     {
       "category_id": "51",
@@ -1603,7 +1603,7 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-25T10:06:27.438Z"
+      "last_sync": "2026-11-25T20:03:53.136Z"
     },
     {
       "category_id": "52",
@@ -1617,7 +1617,7 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-25T10:06:29.696Z"
+      "last_sync": "2026-11-25T20:03:55.359Z"
     },
     {
       "category_id": "53",
@@ -1631,7 +1631,7 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-25T10:06:31.954Z"
+      "last_sync": "2026-11-25T20:03:57.586Z"
     }
   ]
 }
