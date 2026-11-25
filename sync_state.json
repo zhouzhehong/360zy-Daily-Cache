@@ -1,6 +1,6 @@
 {
   "status": "completed",
-  "lastSync": "2026-11-24T16:52:56.858Z",
+  "lastSync": "2026-11-25T01:16:07.599Z",
   "syncMode": "incremental",
   "categories": [
     "电影",
@@ -926,10 +926,10 @@
     "totalCategories": 50,
     "completedCategories": 50,
     "failedCategories": 0,
-    "rawCount": 165,
-    "normalizedCount": 165,
+    "rawCount": 111,
+    "normalizedCount": 111,
     "uniqueCount": 74082,
-    "successfulPages": 18,
+    "successfulPages": 17,
     "failedPages": 0
   },
   "categoryStatistics": [
@@ -945,7 +945,7 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-24T16:50:57.477Z"
+      "last_sync": "2026-11-25T01:14:13.018Z"
     },
     {
       "category_id": "2",
@@ -959,7 +959,7 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-24T16:50:59.944Z"
+      "last_sync": "2026-11-25T01:14:15.243Z"
     },
     {
       "category_id": "3",
@@ -973,7 +973,7 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-24T16:51:02.225Z"
+      "last_sync": "2026-11-25T01:14:17.472Z"
     },
     {
       "category_id": "4",
@@ -987,7 +987,7 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-24T16:51:04.507Z"
+      "last_sync": "2026-11-25T01:14:19.692Z"
     },
     {
       "category_id": "6",
@@ -1001,7 +1001,7 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-24T16:51:06.786Z"
+      "last_sync": "2026-11-25T01:14:21.915Z"
     },
     {
       "category_id": "7",
@@ -1015,7 +1015,7 @@
       "successful_pages": 1,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-24T16:51:09.170Z"
+      "last_sync": "2026-11-25T01:14:24.231Z"
     },
     {
       "category_id": "8",
@@ -1029,7 +1029,7 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-24T16:51:11.535Z"
+      "last_sync": "2026-11-25T01:14:26.522Z"
     },
     {
       "category_id": "9",
@@ -1043,7 +1043,7 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-24T16:51:13.861Z"
+      "last_sync": "2026-11-25T01:14:28.790Z"
     },
     {
       "category_id": "10",
@@ -1057,7 +1057,7 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-24T16:51:16.652Z"
+      "last_sync": "2026-11-25T01:14:31.063Z"
     },
     {
       "category_id": "11",
@@ -1071,7 +1071,7 @@
       "successful_pages": 1,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-24T16:51:18.978Z"
+      "last_sync": "2026-11-25T01:14:33.329Z"
     },
     {
       "category_id": "12",
@@ -1085,7 +1085,7 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-24T16:51:21.461Z"
+      "last_sync": "2026-11-25T01:14:35.693Z"
     },
     {
       "category_id": "13",
@@ -1099,7 +1099,7 @@
       "successful_pages": 1,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-24T16:51:23.775Z"
+      "last_sync": "2026-11-25T01:14:37.947Z"
     },
     {
       "category_id": "14",
@@ -1113,7 +1113,7 @@
       "successful_pages": 1,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-24T16:51:26.364Z"
+      "last_sync": "2026-11-25T01:14:40.285Z"
     },
     {
       "category_id": "15",
@@ -1127,7 +1127,7 @@
       "successful_pages": 1,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-24T16:51:28.665Z"
+      "last_sync": "2026-11-25T01:14:42.523Z"
     },
     {
       "category_id": "16",
@@ -1141,7 +1141,7 @@
       "successful_pages": 1,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-24T16:51:30.992Z"
+      "last_sync": "2026-11-25T01:14:44.802Z"
     },
     {
       "category_id": "17",
@@ -1155,7 +1155,7 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-24T16:51:33.324Z"
+      "last_sync": "2026-11-25T01:14:47.077Z"
     },
     {
       "category_id": "18",
@@ -1169,7 +1169,7 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-24T16:51:35.608Z"
+      "last_sync": "2026-11-25T01:14:49.299Z"
     },
     {
       "category_id": "20",
@@ -1183,7 +1183,7 @@
       "successful_pages": 1,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-24T16:51:37.925Z"
+      "last_sync": "2026-11-25T01:14:51.571Z"
     },
     {
       "category_id": "21",
@@ -1197,7 +1197,7 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-24T16:51:40.246Z"
+      "last_sync": "2026-11-25T01:14:53.824Z"
     },
     {
       "category_id": "22",
@@ -1211,7 +1211,7 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-24T16:51:42.531Z"
+      "last_sync": "2026-11-25T01:14:56.054Z"
     },
     {
       "category_id": "23",
@@ -1225,7 +1225,7 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-24T16:51:44.823Z"
+      "last_sync": "2026-11-25T01:14:58.273Z"
     },
     {
       "category_id": "24",
@@ -1239,7 +1239,7 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-24T16:51:47.112Z"
+      "last_sync": "2026-11-25T01:15:00.506Z"
     },
     {
       "category_id": "25",
@@ -1253,7 +1253,7 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-24T16:51:49.425Z"
+      "last_sync": "2026-11-25T01:15:02.774Z"
     },
     {
       "category_id": "26",
@@ -1267,7 +1267,7 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-24T16:51:51.735Z"
+      "last_sync": "2026-11-25T01:15:05.047Z"
     },
     {
       "category_id": "27",
@@ -1281,7 +1281,7 @@
       "successful_pages": 1,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-24T16:51:54.015Z"
+      "last_sync": "2026-11-25T01:15:07.263Z"
     },
     {
       "category_id": "28",
@@ -1295,7 +1295,7 @@
       "successful_pages": 1,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-24T16:51:56.335Z"
+      "last_sync": "2026-11-25T01:15:09.537Z"
     },
     {
       "category_id": "29",
@@ -1309,7 +1309,7 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-24T16:51:58.620Z"
+      "last_sync": "2026-11-25T01:15:11.799Z"
     },
     {
       "category_id": "30",
@@ -1323,7 +1323,7 @@
       "successful_pages": 1,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-24T16:52:00.943Z"
+      "last_sync": "2026-11-25T01:15:14.068Z"
     },
     {
       "category_id": "31",
@@ -1337,7 +1337,7 @@
       "successful_pages": 1,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-24T16:52:03.670Z"
+      "last_sync": "2026-11-25T01:15:16.387Z"
     },
     {
       "category_id": "32",
@@ -1351,7 +1351,7 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-24T16:52:06.021Z"
+      "last_sync": "2026-11-25T01:15:18.680Z"
     },
     {
       "category_id": "33",
@@ -1365,7 +1365,7 @@
       "successful_pages": 1,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-24T16:52:08.301Z"
+      "last_sync": "2026-11-25T01:15:20.936Z"
     },
     {
       "category_id": "34",
@@ -1379,7 +1379,7 @@
       "successful_pages": 1,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-24T16:52:10.626Z"
+      "last_sync": "2026-11-25T01:15:23.199Z"
     },
     {
       "category_id": "35",
@@ -1393,7 +1393,7 @@
       "successful_pages": 1,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-24T16:52:13.232Z"
+      "last_sync": "2026-11-25T01:15:25.657Z"
     },
     {
       "category_id": "36",
@@ -1407,7 +1407,7 @@
       "successful_pages": 1,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-24T16:52:15.973Z"
+      "last_sync": "2026-11-25T01:15:29.142Z"
     },
     {
       "category_id": "37",
@@ -1421,7 +1421,7 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-24T16:52:18.266Z"
+      "last_sync": "2026-11-25T01:15:31.413Z"
     },
     {
       "category_id": "38",
@@ -1435,7 +1435,7 @@
       "successful_pages": 1,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-24T16:52:20.544Z"
+      "last_sync": "2026-11-25T01:15:33.637Z"
     },
     {
       "category_id": "39",
@@ -1449,7 +1449,7 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-24T16:52:23.308Z"
+      "last_sync": "2026-11-25T01:15:36.090Z"
     },
     {
       "category_id": "40",
@@ -1463,7 +1463,7 @@
       "successful_pages": 1,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-24T16:52:25.588Z"
+      "last_sync": "2026-11-25T01:15:38.326Z"
     },
     {
       "category_id": "41",
@@ -1477,7 +1477,7 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-24T16:52:27.930Z"
+      "last_sync": "2026-11-25T01:15:40.589Z"
     },
     {
       "category_id": "42",
@@ -1491,7 +1491,7 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-24T16:52:30.247Z"
+      "last_sync": "2026-11-25T01:15:42.882Z"
     },
     {
       "category_id": "43",
@@ -1505,7 +1505,7 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-24T16:52:32.528Z"
+      "last_sync": "2026-11-25T01:15:45.113Z"
     },
     {
       "category_id": "45",
@@ -1519,21 +1519,21 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-24T16:52:34.798Z"
+      "last_sync": "2026-11-25T01:15:47.340Z"
     },
     {
       "category_id": "46",
       "category_name": "爽文短剧",
       "mode": "incremental",
-      "total": 54,
-      "pagecount": 1,
-      "raw_count": 54,
-      "normalized_count": 54,
+      "total": 0,
+      "pagecount": 0,
+      "raw_count": 0,
+      "normalized_count": 0,
       "unique_count": 27956,
-      "successful_pages": 1,
+      "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-24T16:52:37.074Z"
+      "last_sync": "2026-11-25T01:15:49.566Z"
     },
     {
       "category_id": "47",
@@ -1547,7 +1547,7 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-24T16:52:39.671Z"
+      "last_sync": "2026-11-25T01:15:52.006Z"
     },
     {
       "category_id": "48",
@@ -1561,7 +1561,7 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-24T16:52:41.975Z"
+      "last_sync": "2026-11-25T01:15:54.267Z"
     },
     {
       "category_id": "49",
@@ -1575,7 +1575,7 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-24T16:52:44.244Z"
+      "last_sync": "2026-11-25T01:15:56.482Z"
     },
     {
       "category_id": "50",
@@ -1589,7 +1589,7 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-24T16:52:47.719Z"
+      "last_sync": "2026-11-25T01:15:58.709Z"
     },
     {
       "category_id": "51",
@@ -1603,7 +1603,7 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-24T16:52:50.004Z"
+      "last_sync": "2026-11-25T01:16:00.924Z"
     },
     {
       "category_id": "52",
@@ -1617,7 +1617,7 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-24T16:52:52.285Z"
+      "last_sync": "2026-11-25T01:16:03.164Z"
     },
     {
       "category_id": "53",
@@ -1631,7 +1631,7 @@
       "successful_pages": 0,
       "failed_pages": 0,
       "complete": true,
-      "last_sync": "2026-11-24T16:52:54.570Z"
+      "last_sync": "2026-11-25T01:16:05.379Z"
     }
   ]
 }
